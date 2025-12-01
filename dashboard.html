@@ -117,11 +117,33 @@
 
         /* Sidebar Styles */
         .sidebar-brand-full {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #fff;
+            padding: 0.75rem 1rem;
+        }
+        
+        .sidebar-brand-full i {
+            font-size: 1.5rem;
+            color: #4CAF50;
+            margin-right: 0.75rem;
         }
         
         .sidebar-brand-narrow {
             display: none;
+            padding: 0.5rem;
+        }
+        
+        .sidebar-brand-narrow i {
+            font-size: 1.75rem;
+            color: #4CAF50;
+        }
+        
+        .sidebar-brand {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 0.5rem;
         }
         
         /* Sidebar Unfoldable Mode */
@@ -286,11 +308,11 @@
     <div class="sidebar sidebar-dark sidebar-fixed" id="sidebar">
         <div class="sidebar-brand d-none d-md-flex">
             <div class="sidebar-brand-full d-flex align-items-center">
-                <i class="fas fa-briefcase me-2"></i>
+                <i class="fas fa-file-invoice-dollar"></i>
                 <strong>PO & Invoice</strong>
             </div>
             <div class="sidebar-brand-narrow">
-                <i class="fas fa-briefcase"></i>
+                <i class="fas fa-file-invoice-dollar"></i>
             </div>
         </div>
         <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
