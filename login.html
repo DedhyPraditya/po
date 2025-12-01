@@ -152,7 +152,7 @@
     <script>
         // Check if already logged in
         if (localStorage.getItem('isLoggedIn') === 'true') {
-            window.location.href = 'index.html';
+            window.location.href = 'dashboard.html';
         }
 
         const loginForm = document.getElementById('login-form');
@@ -184,7 +184,7 @@
 
                 // Redirect to dashboard
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = 'dashboard.html';
                 }, 1000);
             } else {
                 // Show error message
