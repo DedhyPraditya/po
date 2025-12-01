@@ -18,11 +18,10 @@ jobs:
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
                   port: ${{ secrets.SERVER_PORT }}
                   script: |
-                      export PATH=$PATH:/usr/local/bin:/root/.nvm/versions/node/$(ls /root/.nvm/versions/node | tail -1)/bin
+                      export PATH=/www/server/nodejs/v22.19.0/bin:$PATH
                       cd /www/wwwroot/po
-                      git stash
+                      git reset --hard origin/main
                       git pull origin main
-                      git stash pop || true
                       npm install --production
                       pm2 restart po-invoice || pm2 start server.js --name po-invoice
                       pm2 save
