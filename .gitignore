@@ -17,6 +17,15 @@ Thumbs.db
 .vscode/
 .idea/
 
+# SSH keys - DO NOT COMMIT
+github-deploy-key
+github-deploy-key.pub
+*.pem
+*.key
+
+# PM2
+.pm2/
+
 # Temporary files
 *.tmp
 *.temp
