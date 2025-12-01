@@ -911,7 +911,86 @@
             if (typeof loadDashboardStats === 'function') {
                 loadDashboardStats();
             }
+            loadRecentActivity();
+            loadMonthlySummary();
         });
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch('/api/recent-activity');
+                const activities = await response.json();
+                
+                const tbody = document.getElementById('recent-activity');
+                if (!activities || activities.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted"><small>Belum ada aktivitas</small></td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = activities.map(activity => `
+                    <tr>
+                        <td><small>${new Date(activity.created_at).toLocaleDateString('id-ID', { 
+                            day: '2-digit', 
+                            month: 'short', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}</small></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas ${activity.type === 'quotation' ? 'fa-file-alt' : 'fa-receipt'} me-2 text-primary"></i>
+                                <span>${activity.type === 'quotation' ? 'Penawaran' : 'Invoice'} #${activity.id}</span>
+                            </div>
+                        </td>
+                        <td><small>${activity.client_name || '-'}</small></td>
+                        <td>
+                            <span class="status-badge status-${activity.status.toLowerCase()}">
+                                ${activity.status}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('recent-activity').innerHTML = 
+                    '<tr><td colspan="4" class="text-center text-muted"><small>Gagal memuat aktivitas</small></td></tr>';
+            }
+        }
+
+        // Load monthly summary
+        async function loadMonthlySummary() {
+            try {
+                const response = await fetch('/api/monthly-summary');
+                const summary = await response.json();
+                
+                // Update quotation counts
+                document.getElementById('summary-draft').textContent = summary.quotations.draft || 0;
+                document.getElementById('summary-sent').textContent = summary.quotations.sent || 0;
+                document.getElementById('summary-accepted').textContent = summary.quotations.accepted || 0;
+                
+                // Update invoice counts
+                document.getElementById('summary-unpaid').textContent = summary.invoices.unpaid || 0;
+                document.getElementById('summary-paid').textContent = summary.invoices.paid || 0;
+                
+                // Calculate progress bars (percentage based on total)
+                const totalQuotations = summary.quotations.total || 1; // prevent division by zero
+                const totalInvoices = summary.invoices.total || 1;
+                
+                document.getElementById('progress-draft').style.width = 
+                    ((summary.quotations.draft / totalQuotations) * 100) + '%';
+                document.getElementById('progress-sent').style.width = 
+                    ((summary.quotations.sent / totalQuotations) * 100) + '%';
+                document.getElementById('progress-accepted').style.width = 
+                    ((summary.quotations.accepted / totalQuotations) * 100) + '%';
+                document.getElementById('progress-unpaid').style.width = 
+                    ((summary.invoices.unpaid / totalInvoices) * 100) + '%';
+                document.getElementById('progress-paid').style.width = 
+                    ((summary.invoices.paid / totalInvoices) * 100) + '%';
+                    
+            } catch (error) {
+                console.error('Error loading monthly summary:', error);
+            }
+        }
     </script>
 </body>
 </html>

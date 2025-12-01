@@ -300,6 +300,65 @@ function startServer() {
         });
     });
 
+    // Get Recent Activity (last 10 activities from quotations and invoices)
+    app.get('/api/recent-activity', (req, res) => {
+        const sql = `
+            SELECT 
+                id,
+                client_name,
+                status,
+                created_at,
+                'quotation' as type
+            FROM quotations
+            ORDER BY created_at DESC
+            LIMIT 10
+        `;
+        
+        db.query(sql, (err, results) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(results);
+        });
+    });
+
+    // Get Monthly Summary
+    app.get('/api/monthly-summary', (req, res) => {
+        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+        
+        const quotationsSql = `
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft,
+                SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as sent,
+                SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted,
+                SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
+            FROM quotations
+            WHERE DATE_FORMAT(created_at, '%Y-%m') = ?
+        `;
+        
+        const invoicesSql = `
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'unpaid' THEN 1 ELSE 0 END) as unpaid,
+                SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid,
+                SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) as overdue
+            FROM invoices
+            WHERE DATE_FORMAT(created_at, '%Y-%m') = ?
+        `;
+        
+        db.query(quotationsSql, [currentMonth], (err, quotationResults) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            db.query(invoicesSql, [currentMonth], (err, invoiceResults) => {
+                if (err) return res.status(500).json({ error: err.message });
+                
+                res.json({
+                    quotations: quotationResults[0] || {},
+                    invoices: invoiceResults[0] || {}
+                });
+            });
+        });
+    });
+
     // 2. Create Quotation
     app.post('/api/quotations', (req, res) => {
         const { client_name, client_address, quotation_date, items } = req.body;
