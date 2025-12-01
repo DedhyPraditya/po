@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "git:push": "git add -A && git commit -m \"Update\" && git push origin main",
+    "git:status": "git status",
+    "git:log": "git log --oneline -10"
   },
   "dependencies": {
     "@coreui/coreui": "^5.4.3",
