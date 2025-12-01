@@ -12,12 +12,25 @@ app.use(bodyParser.json());
 app.use(express.static(__dirname)); // Serve static files from root
 app.use('/node_modules', express.static(__dirname + '/node_modules')); // Serve node_modules
 
-// Database Connection Configuration
-const dbConfig = {
+// Database Connection Configuration - Auto detect environment
+const isProduction = process.env.NODE_ENV === 'production' || process.platform === 'linux';
+
+const dbConfig = isProduction ? {
+    // Production (Server VM)
     host: 'localhost',
     user: 'root',
-    password: ''
+    password: '766417c16a2eaaae',
+    port: 3306
+} : {
+    // Development (Local)
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    port: 3306,
+    connectTimeout: 60000
 };
+
+console.log(`Running in ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
 
 // Create Connection (without database initially)
 const db = mysql.createConnection(dbConfig);
