@@ -1,0 +1,107 @@
+{
+  "client_name": "PT. Customer CCTV",
+  "client_address": "Makassar, Sulawesi Selatan",
+  "quotation_date": "2024-12-01",
+  "items": [
+    {
+      "description": "Dahua DH-HAC-B1A21-U",
+      "quantity": 2,
+      "unit": "Unit",
+      "unit_price": 187500,
+      "cost_price": 150000,
+      "profit_margin": 25,
+      "discount": 0,
+      "total_price": 375000
+    },
+    {
+      "description": "Dahua DH-HAC-T1A21-U",
+      "quantity": 6,
+      "unit": "Unit",
+      "unit_price": 175000,
+      "cost_price": 140000,
+      "profit_margin": 25,
+      "discount": 0,
+      "total_price": 1050000
+    },
+    {
+      "description": "BNC Drat RG6 Premium (High Quality)",
+      "quantity": 16,
+      "unit": "pcs",
+      "unit_price": 4118,
+      "cost_price": 3000,
+      "profit_margin": 37,
+      "discount": 0,
+      "total_price": 65888
+    },
+    {
+      "description": "DC Male (High Quality)",
+      "quantity": 8,
+      "unit": "pcs",
+      "unit_price": 1765,
+      "cost_price": 1200,
+      "profit_margin": 47,
+      "discount": 0,
+      "total_price": 14120
+    },
+    {
+      "description": "Kabel CCTV outdoor RG59 / 120 meter",
+      "quantity": 1,
+      "unit": "Roll",
+      "unit_price": 337500,
+      "cost_price": 270000,
+      "profit_margin": 25,
+      "discount": 0,
+      "total_price": 337500
+    },
+    {
+      "description": "HDMI Cable 1.5m",
+      "quantity": 1,
+      "unit": "Unit",
+      "unit_price": 11765,
+      "cost_price": 8000,
+      "profit_margin": 47,
+      "discount": 0,
+      "total_price": 11765
+    },
+    {
+      "description": "Jasa Instalasi + Setting",
+      "quantity": 8,
+      "unit": "Titik",
+      "unit_price": 175000,
+      "cost_price": 100000,
+      "profit_margin": 75,
+      "discount": 0,
+      "total_price": 1400000
+    },
+    {
+      "description": "Materal Support",
+      "quantity": 1,
+      "unit": "Lot",
+      "unit_price": 50000,
+      "cost_price": 30000,
+      "profit_margin": 67,
+      "discount": 0,
+      "total_price": 50000
+    },
+    {
+      "description": "DVR 8CH decoder",
+      "quantity": 1,
+      "unit": "Unit",
+      "unit_price": 887500,
+      "cost_price": 710000,
+      "profit_margin": 25,
+      "discount": 0,
+      "total_price": 887500
+    },
+    {
+      "description": "HDD 4TB",
+      "quantity": 1,
+      "unit": "Unit",
+      "unit_price": 2705882,
+      "cost_price": 2400000,
+      "profit_margin": 13,
+      "discount": 0,
+      "total_price": 2705882
+    }
+  ]
+}

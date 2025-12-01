@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PO & Invoice App</title>
+    <!-- CoreUI CSS -->
+    <link href="template/dist/css/coreui.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        .login-header i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .login-header h4 {
+            margin: 0;
+            font-weight: 700;
+        }
+        .login-header p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        .login-body {
+            padding: 40px 30px;
+        }
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-group-custom i {
+            position: absolute;
+            left: 15px;
+            top: 18px;
+            color: #6c757d;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .input-group-custom input {
+            padding-left: 45px;
+            height: 56px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            width: 100%;
+        }
+        .input-group-custom input:focus {
+            border-color: #667eea;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
+        .input-group-custom label {
+            position: absolute;
+            left: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            pointer-events: none;
+            transition: all 0.2s;
+            background: white;
+            padding: 0 5px;
+        }
+        .input-group-custom input:focus + label,
+        .input-group-custom input:not(:placeholder-shown) + label {
+            top: 0;
+            font-size: 0.75rem;
+            color: #667eea;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            transition: transform 0.2s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .login-footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-briefcase"></i>
+                <h4>PO & Invoice App</h4>
+                <p>Silakan login untuk melanjutkan</p>
+            </div>
+            <div class="login-body">
+                <div id="alert-container"></div>
+                <form id="login-form">
+                    <div class="input-group-custom">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" placeholder=" " required autocomplete="username">
+                        <label for="username">Username</label>
+                    </div>
+                    <div class="input-group-custom">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder=" " required autocomplete="current-password">
+                        <label for="password">Password</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-login">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+                </form>
+            </div>
+            <div class="login-footer">
+                <small>© 2025 PO & Invoice App. All rights reserved.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- CoreUI JS -->
+    <script src="template/dist/js/coreui.bundle.min.js"></script>
+    <script>
+        // Check if already logged in
+        if (localStorage.getItem('isLoggedIn') === 'true') {
+            window.location.href = 'index.html';
+        }
+
+        const loginForm = document.getElementById('login-form');
+        const alertContainer = document.getElementById('alert-container');
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Clear previous alerts
+            alertContainer.innerHTML = '';
+
+            // Validate credentials
+            if (username === 'admin' && password === 'admin123') {
+                // Set login status
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('username', username);
+                localStorage.setItem('loginTime', new Date().toISOString());
+
+                // Show success message
+                alertContainer.innerHTML = `
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Login berhasil! Mengarahkan...
+                    </div>
+                `;
+
+                // Redirect to dashboard
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } else {
+                // Show error message
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Username atau password salah!
+                    </div>
+                `;
+
+                // Clear password field
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            }
+        });
+    </script>
+</body>
+</html>

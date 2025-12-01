@@ -1,0 +1,23 @@
+/* Item Table Styles */
+#items-table input.form-control-sm {
+  font-size: 0.875rem;
+}
+
+#items-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  font-size: 0.875rem;
+  vertical-align: middle;
+  white-space: nowrap;
+  text-align: center;
+}
+
+#items-table td {
+  vertical-align: middle;
+  padding: 0.5rem;
+}
+
+#items-table input[readonly] {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}

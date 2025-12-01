@@ -1,0 +1,26 @@
+async function migrateTables() {
+    // Migration to add columns - using standard syntax
+    const migrations = [
+        { sql: "ALTER TABLE products ADD COLUMN unit VARCHAR(50) DEFAULT 'pcs' AFTER name", desc: "Add unit to products" },
+        { sql: "ALTER TABLE products ADD COLUMN cost_price DECIMAL(15, 2) DEFAULT 0.00 AFTER unit", desc: "Add cost_price to products" },
+        { sql: "ALTER TABLE products ADD COLUMN profit_margin DECIMAL(5, 2) DEFAULT 0.00 AFTER cost_price", desc: "Add profit_margin to products" },
+        { sql: "ALTER TABLE quotation_items ADD COLUMN unit VARCHAR(50) DEFAULT 'pcs' AFTER quantity", desc: "Add unit to quotation_items" },
+        { sql: "ALTER TABLE quotation_items ADD COLUMN cost_price DECIMAL(15, 2) DEFAULT 0.00 AFTER unit_price", desc: "Add cost_price to quotation_items" },
+        { sql: "ALTER TABLE quotation_items ADD COLUMN profit_margin DECIMAL(5, 2) DEFAULT 0.00 AFTER cost_price", desc: "Add profit_margin to quotation_items" },
+        { sql: "ALTER TABLE quotation_items ADD COLUMN discount DECIMAL(15, 2) DEFAULT 0.00 AFTER profit_margin", desc: "Add discount to quotation_items" }
+    ];
+
+    for (const migration of migrations) {
+        try {
+            await db.promise().query(migration.sql);
+            console.log(`✓ ${migration.desc}`);
+        } catch (err) {
+            // Ignore if column already exists (error 1060)
+            if (err.errno !== 1060) {
+                console.error(`✗ ${migration.desc}: ${err.message}`);
+            }
+        }
+    }
+    
+    console.log('Database schema migrated');
+}
