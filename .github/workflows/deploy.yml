@@ -1,25 +1,28 @@
 name: Deploy to Server
 
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Deploy to Server via SSH
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.SERVER_PORT }}
-        script: |
-          cd /www/wwwroot/po
-          git pull origin main
-          npm install --production
-          pm2 restart po-invoice || pm2 start server.js --name po-invoice
-          pm2 save
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Deploy to Server via SSH
+              uses: appleboy/ssh-action@v1.0.0
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  port: ${{ secrets.SERVER_PORT }}
+                  script: |
+                      export PATH=$PATH:/usr/local/bin:/root/.nvm/versions/node/$(ls /root/.nvm/versions/node | tail -1)/bin
+                      cd /www/wwwroot/po
+                      git stash
+                      git pull origin main
+                      git stash pop || true
+                      npm install --production
+                      pm2 restart po-invoice || pm2 start server.js --name po-invoice
+                      pm2 save
