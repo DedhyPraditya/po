@@ -1,4 +1,9 @@
-const API_URL = 'http://localhost:3000/api';
+// Auto-detect API URL based on current location
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000/api'
+    : `${window.location.protocol}//${window.location.host}/api`;
+
+console.log('API URL:', API_URL);
 
 // DOM Elements
 const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
@@ -890,7 +895,8 @@ window.printQuotationContent = (id) => {
 
 // Print Quotation (legacy support)
 window.printQuotation = (id) => {
-    printQuotationContent(id);
+    // Open preview first, then the print button in preview will handle printing
+    viewQuotation(id);
 };
 
 // Delete Quotation
@@ -1141,7 +1147,8 @@ window.printInvoice = async (id) => {
                 <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
                     <div style="flex: 1;">
                         <p style="color: #666; margin-bottom: 0.5rem; font-size: 12px;">Bill To</p>
-                        <p style="margin: 0; font-weight: bold;">${invoice.client_name}</p>
+                        <p style="margin: 0; font-weight: bold;">${quotation.client_name}</p>
+                        <p style="color: #666; margin: 0; font-size: 14px;">${quotation.client_address || '-'}</p>
                     </div>
                     <div>
                         <table style="float: right; font-size: 14px;">
