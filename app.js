@@ -305,12 +305,16 @@ async function loadDashboardStats() {
             fetch(`${API_URL}/products`).then(r => r.json())
         ]);
 
-        document.getElementById('stat-quotations').textContent = quotations.length;
-        document.getElementById('stat-invoices').textContent = invoices.length;
-        document.getElementById('stat-products').textContent = products.length;
+        const elQuot = document.getElementById('stat-quotations');
+        if (elQuot) elQuot.textContent = quotations.length;
+        const elInv = document.getElementById('stat-invoices');
+        if (elInv) elInv.textContent = invoices.length;
+        const elProd = document.getElementById('stat-products');
+        if (elProd) elProd.textContent = products.length;
 
         const revenue = invoices.reduce((sum, inv) => sum + parseFloat(inv.total_amount), 0);
-        document.getElementById('stat-revenue').textContent = `Rp ${Math.round(revenue).toLocaleString('id-ID')}`;
+        const elRev = document.getElementById('stat-revenue');
+        if (elRev) elRev.textContent = `Rp ${Math.round(revenue).toLocaleString('id-ID')}`;
 
         // Calculate estimated revenue from total margin in quotation items
         let totalMargin = 0;
@@ -320,7 +324,8 @@ async function loadDashboardStats() {
             totalMargin += details.items.reduce((sum, item) => sum + parseFloat(item.profit_margin || 0), 0);
         }
         console.log(`Total Margin: ${totalMargin}`); // Debug log
-        document.getElementById('stat-estimated-revenue').textContent = `Rp ${Math.round(totalMargin).toLocaleString('id-ID')}`;
+        const elEstRev = document.getElementById('stat-estimated-revenue');
+        if (elEstRev) elEstRev.textContent = `Rp ${Math.round(totalMargin).toLocaleString('id-ID')}`;
 
         // Update Ringkasan Bulan Ini
         const draftCount = quotations.filter(q => q.status === 'draft').length;
@@ -332,18 +337,28 @@ async function loadDashboardStats() {
         const totalQuotations = quotations.length || 1; // Avoid division by zero
         const totalInvoices = invoices.length || 1;
         
-        document.getElementById('summary-draft').textContent = draftCount;
-        document.getElementById('summary-sent').textContent = sentCount;
-        document.getElementById('summary-accepted').textContent = acceptedCount;
-        document.getElementById('summary-unpaid').textContent = unpaidCount;
-        document.getElementById('summary-paid').textContent = paidCount;
-        
+        const elDraft = document.getElementById('summary-draft');
+        if (elDraft) elDraft.textContent = draftCount;
+        const elSent = document.getElementById('summary-sent');
+        if (elSent) elSent.textContent = sentCount;
+        const elAcc = document.getElementById('summary-accepted');
+        if (elAcc) elAcc.textContent = acceptedCount;
+        const elUnpaid = document.getElementById('summary-unpaid');
+        if (elUnpaid) elUnpaid.textContent = unpaidCount;
+        const elPaid = document.getElementById('summary-paid');
+        if (elPaid) elPaid.textContent = paidCount;
+
         // Update progress bars
-        document.getElementById('progress-draft').style.width = `${(draftCount/totalQuotations)*100}%`;
-        document.getElementById('progress-sent').style.width = `${(sentCount/totalQuotations)*100}%`;
-        document.getElementById('progress-accepted').style.width = `${(acceptedCount/totalQuotations)*100}%`;
-        document.getElementById('progress-unpaid').style.width = `${(unpaidCount/totalInvoices)*100}%`;
-        document.getElementById('progress-paid').style.width = `${(paidCount/totalInvoices)*100}%`;
+        const elProgDraft = document.getElementById('progress-draft');
+        if (elProgDraft) elProgDraft.style.width = `${(draftCount/totalQuotations)*100}%`;
+        const elProgSent = document.getElementById('progress-sent');
+        if (elProgSent) elProgSent.style.width = `${(sentCount/totalQuotations)*100}%`;
+        const elProgAcc = document.getElementById('progress-accepted');
+        if (elProgAcc) elProgAcc.style.width = `${(acceptedCount/totalQuotations)*100}%`;
+        const elProgUnpaid = document.getElementById('progress-unpaid');
+        if (elProgUnpaid) elProgUnpaid.style.width = `${(unpaidCount/totalInvoices)*100}%`;
+        const elProgPaid = document.getElementById('progress-paid');
+        if (elProgPaid) elProgPaid.style.width = `${(paidCount/totalInvoices)*100}%`;
 
     } catch (error) {
         console.error('Error loading stats:', error);
@@ -544,71 +559,99 @@ modalQuotationEl.addEventListener('hidden.coreui.modal', () => {
 
 btnAddItem.addEventListener('click', addItemRow);
 
+// Fungsi log custom: simpan ke localStorage, tidak tampil di halaman
+function appLog(...args) {
+    const logs = JSON.parse(localStorage.getItem('appLog') || '[]');
+    const msg = `[${new Date().toLocaleString()}] ` + args.map(a => (typeof a === 'object' ? JSON.stringify(a) : a)).join(' ');
+    logs.unshift(msg);
+    // Simpan max 200 log terakhir
+    localStorage.setItem('appLog', JSON.stringify(logs.slice(0, 200)));
+    // Tetap log ke console untuk dev
+    console.log('[APPLOG]', ...args);
+}
+
 async function loadQuotations() {
     try {
+        appLog('Memuat data penawaran...');
         const response = await fetch(`${API_URL}/quotations`);
         const data = await response.json();
+        appLog('Data penawaran dari API:', data);
         renderQuotations(data);
     } catch (error) {
-        console.error('Error loading quotations:', error);
+        appLog('Gagal load quotations:', error);
     }
 }
 
 function renderQuotations(quotations) {
-    quotationsTableBody.innerHTML = quotations.map(q => {
-        const isAccepted = q.status === 'accepted';
-        const isRejected = q.status === 'rejected';
-        const isFinal = isAccepted || isRejected;
-        
-        return `
-        <tr>
-            <td>#${q.id}</td>
-            <td>${q.client_name}</td>
-            <td>${new Date(q.quotation_date).toLocaleDateString()}</td>
-            <td>Rp ${Math.round(parseFloat(q.total_amount)).toLocaleString('id-ID')}</td>
-            <td><span class="status-badge status-${q.status}">${q.status}</span></td>
-            <td>
-                <div class="d-flex gap-2">
-                    <!-- Status Action Buttons -->
-                    <div class="btn-group" role="group">
-                        ${!isFinal ? `
-                        <button onclick="acceptQuotation(${q.id})" class="btn btn-sm btn-success text-white" title="Setujui & Buat Invoice">
-                            <i class="fas fa-check"></i> Accept
-                        </button>
-                        <button onclick="rejectQuotation(${q.id})" class="btn btn-sm btn-danger text-white" title="Tolak Penawaran">
-                            <i class="fas fa-times"></i> Reject
-                        </button>
-                        ` : `
-                        <button onclick="resetQuotationStatus(${q.id})" class="btn btn-sm btn-warning text-white" title="Reset ke Draft">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                        `}
+    appLog('Render quotations:', quotations);
+    if (!window.quotationsTableBody) {
+        window.quotationsTableBody = document.querySelector('#quotations-table');
+    }
+    if (!window.quotationsTableBody) {
+        console.warn('quotationsTableBody not found! Data tidak bisa ditampilkan.');
+        return;
+    }
+    try {
+        if (!Array.isArray(quotations) || quotations.length === 0) {
+            window.quotationsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data penawaran</td></tr>';
+            return;
+        }
+        window.quotationsTableBody.innerHTML = quotations.map(q => {
+            const isAccepted = q.status === 'accepted';
+            const isRejected = q.status === 'rejected';
+            const isFinal = isAccepted || isRejected;
+            return `
+            <tr>
+                <td>#${q.id}</td>
+                <td>${q.client_name}</td>
+                <td>${new Date(q.quotation_date).toLocaleDateString()}</td>
+                <td>Rp ${Math.round(parseFloat(q.total_amount)).toLocaleString('id-ID')}</td>
+                <td><span class="status-badge status-${q.status}">${q.status}</span></td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <!-- Status Action Buttons -->
+                        <div class="btn-group" role="group">
+                            ${!isFinal ? `
+                            <button onclick="acceptQuotation(${q.id})" class="btn btn-sm btn-success text-white" title="Setujui & Buat Invoice">
+                                <i class="fas fa-check"></i> Accept
+                            </button>
+                            <button onclick="rejectQuotation(${q.id})" class="btn btn-sm btn-danger text-white" title="Tolak Penawaran">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                            ` : `
+                            <button onclick="resetQuotationStatus(${q.id})" class="btn btn-sm btn-warning text-white" title="Reset ke Draft">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
+                            `}
+                        </div>
+                        <!-- Regular Action Buttons -->
+                        <div class="btn-group" role="group">
+                            <button onclick="viewQuotation(${q.id})" class="btn btn-sm btn-info text-white" title="Preview">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${!isFinal ? `
+                            <button onclick="editQuotation(${q.id})" class="btn btn-sm btn-warning text-white" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ` : ''}
+                            <button onclick="printQuotation(${q.id})" class="btn btn-sm btn-secondary text-white" title="Print">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            ${!isAccepted ? `
+                            <button onclick="deleteQuotation(${q.id})" class="btn btn-sm btn-outline-danger" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            ` : ''}
+                        </div>
                     </div>
-                    
-                    <!-- Regular Action Buttons -->
-                    <div class="btn-group" role="group">
-                        <button onclick="viewQuotation(${q.id})" class="btn btn-sm btn-info text-white" title="Preview">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        ${!isFinal ? `
-                        <button onclick="editQuotation(${q.id})" class="btn btn-sm btn-warning text-white" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        ` : ''}
-                        <button onclick="printQuotation(${q.id})" class="btn btn-sm btn-secondary text-white" title="Print">
-                            <i class="fas fa-print"></i>
-                        </button>
-                        ${!isAccepted ? `
-                        <button onclick="deleteQuotation(${q.id})" class="btn btn-sm btn-outline-danger" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        ` : ''}
-                    </div>
-                </div>
-            </td>
-        </tr>
-        `;
-    }).join('');
+                </td>
+            </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        window.quotationsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Gagal menampilkan data penawaran</td></tr>';
+        console.error('Gagal render quotations:', err);
+    }
 }
 
 // View/Preview Quotation
