@@ -385,7 +385,7 @@
             <div class="container-fluid">
                 
                 <!-- Dashboard Tab -->
-                <div id="dashboard" class="tab-content">
+                <div id="dashboard" class="tab-content active">
                     <div class="row g-4 mb-4">
                         <div class="col-12 col-sm-6 col-md-6 col-lg-3">
                             <div class="card dashboard-card text-white bg-primary" style="cursor: pointer;" onclick="navigateToTab('quotations')">
@@ -529,7 +529,7 @@
                 </div>
 
                 <!-- Quotations Tab -->
-                <div id="quotations" class="tab-content active">
+                <div id="quotations" class="tab-content">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <strong>Daftar Penawaran</strong>
@@ -898,18 +898,23 @@
         }
 
         // Tab switching functionality
+
+        // Tab switching functionality with localStorage
         document.querySelectorAll('[data-tab]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                
                 const targetId = e.currentTarget.dataset.tab;
+                localStorage.setItem('lastTab', targetId);
                 navigateToTab(targetId);
             });
         });
 
-        // Load initial data when page is ready
+        // Load initial data and restore last tab
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded, initializing data...');
+            let lastTab = localStorage.getItem('lastTab');
+            if (!lastTab || !document.getElementById(lastTab)) lastTab = 'dashboard';
+            navigateToTab(lastTab);
             if (typeof loadDashboardStats === 'function') {
                 loadDashboardStats();
             }
