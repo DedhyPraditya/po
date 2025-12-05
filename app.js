@@ -713,8 +713,8 @@ window.viewQuotation = async (id) => {
                     <p style="margin: 0;">2. Harga dapat berubah sewaktu-waktu tanpa pemberitahuan terlebih dahulu</p>
                     <p style="margin: 0;">3. Mohon konfirmasi stock terlebih dahulu sebelum turun P.O atau sebelum melakukan pembayaran</p>
                     <p style="margin: 0;">4. Pembayaran dapat dilakukan melalui transfer ke:</p>
-                    <p style="margin: 0; padding-left: 1rem; font-weight: bold; font-style: italic;">Bank BCA-NURHASDI nandar</p>
-                    <p style="margin: 0; padding-left: 1rem; font-weight: bold; font-style: italic;">799--95-5276</p>
+                    <p style="margin: 0; padding-left: 1rem; font-weight: bold; font-style: italic;">Bank BCA-NURHASDI NANDAR</p>
+                    <p style="margin: 0; padding-left: 1rem; font-weight: bold; font-style: italic;">799-95-5276</p>
                 </div>
             </div>
         `;
@@ -1218,8 +1218,8 @@ window.printInvoice = async (id) => {
                     <p style="margin: 0;">2. Harga dapat berubah sewaktu-waktu tanpa pemberitahuan terlebih dahulu</p>
                     <p style="margin: 0;">3. Mohon konfirmasi stock terlebih dahulu sebelum turun P.O atau sebelum melakukan pembayaran</p>
                     <p style="margin: 0;">4. Pembayaran dapat dilakukan melalui transfer ke:</p>
-                    <p style="margin: 0; padding-left: 1rem; font-weight: bold; font-style: italic;">Bank BCA-PT. Mallawa Digital Connection</p>
-                    <p style="margin: 0; padding-left: 1rem; font-weight: bold; font-style: italic;">705.5155216</p>
+                    <p style="margin: 0; padding-left: 1rem; font-weight: bold; font-style: italic;">Bank BCA-NURHASDI NANDAR</p>
+                    <p style="margin: 0; padding-left: 1rem; font-weight: bold; font-style: italic;">799-95-5276</p>
                 </div>
 
                 <!-- Payment Status -->
