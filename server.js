@@ -745,6 +745,55 @@ function startServer() {
         });
     });
 
+    // Get Recent Activity
+    app.get('/api/recent-activity', (req, res) => {
+        const sql = `
+            (SELECT id, client_name, status, created_at, 'quotation' as type 
+             FROM quotations 
+             ORDER BY created_at DESC LIMIT 5)
+            UNION
+            (SELECT id, (SELECT client_name FROM quotations WHERE id = invoices.quotation_id) as client_name, status, created_at, 'invoice' as type 
+             FROM invoices 
+             ORDER BY created_at DESC LIMIT 5)
+            ORDER BY created_at DESC LIMIT 5
+        `;
+        db.query(sql, (err, results) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(results);
+        });
+    });
+
+    // Get Monthly Summary
+    app.get('/api/monthly-summary', (req, res) => {
+        const summary = {
+            quotations: { total: 0, draft: 0, sent: 0, accepted: 0 },
+            invoices: { total: 0, unpaid: 0, paid: 0 }
+        };
+
+        const sqlQuotations = "SELECT status, COUNT(*) as count FROM quotations GROUP BY status";
+        const sqlInvoices = "SELECT status, COUNT(*) as count FROM invoices GROUP BY status";
+
+        db.query(sqlQuotations, (err, qResults) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            qResults.forEach(row => {
+                summary.quotations[row.status] = row.count;
+                summary.quotations.total += row.count;
+            });
+
+            db.query(sqlInvoices, (err, iResults) => {
+                if (err) return res.status(500).json({ error: err.message });
+                
+                iResults.forEach(row => {
+                    summary.invoices[row.status] = row.count;
+                    summary.invoices.total += row.count;
+                });
+
+                res.json(summary);
+            });
+        });
+    });
+
     app.listen(port, () => {
         console.log(`Server running at http://localhost:${port}`);
     });

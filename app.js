@@ -1,9 +1,12 @@
-// Auto-detect API URL based on current location
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000/api'
     : `${window.location.protocol}//${window.location.host}/api`;
 
 console.log('API URL:', API_URL);
+
+if (window.location.protocol === 'file:') {
+    alert('PERHATIAN: Aplikasi ini harus dijalankan melalui server (http://localhost:3000).\nJangan buka file HTML secara langsung.');
+}
 
 // DOM Elements
 const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
@@ -45,27 +48,7 @@ let editingCategoryId = null;
 let editingProductId = null;
 
 // Navigation Logic
-navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        // Remove active class from all links
-        navLinks.forEach(l => l.classList.remove('active'));
-        // Add active class to clicked link
-        // Add active class to clicked link
-        link.classList.add('active');
-        
-        // Hide all tabs
-        tabContents.forEach(c => c.classList.remove('active'));
-        
-        // Show target tab
-        const targetId = link.dataset.tab;
-        document.getElementById(targetId).classList.add('active');
-        
-        currentTab = targetId;
-        loadData();
-    });
-});
+// Event handler tab hanya di dashboard.html (navigateToTab), tidak perlu di sini agar tidak double render
 
 formCategory.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -458,70 +441,133 @@ function renderProducts(data) {
     `).join('');
 }
 
-// ... (existing code)
+// Perbaiki error search-product
 
-window.editProduct = (id, catId, name, unit, cost, price) => {
-    editingProductId = id;
-    renderCategoryOptions(); // Ensure options are loaded
-    formProduct.category_id.value = catId;
-    formProduct.product_name.value = name;
-    formProduct.product_unit.value = unit;
-    formProduct.product_cost_price.value = cost;
-    formProduct.product_price.value = price;
-    document.querySelector('#modal-product .modal-title').textContent = 'Edit Produk';
-    modalProduct.show();
-};
 
-// ... (existing code)
-
-// Product Form Auto-Calculation
-const inputCost = formProduct.product_cost_price;
-const inputMargin = formProduct.product_profit_margin;
-const inputPrice = formProduct.product_price;
-
-function calculateSellingPrice() {
-    const cost = parseFloat(inputCost.value) || 0;
-    const margin = parseFloat(inputMargin.value) || 0;
-    
-    if (cost > 0 && margin < 100) {
-        // Formula: Price = Cost / (1 - Margin%)
-        const price = cost / (1 - (margin / 100));
-        inputPrice.value = Math.round(price); // Round to nearest integer
+// Debugging tambahan di renderQuotations
+function renderQuotations(quotations) {
+    appLog('Render quotations:', quotations);
+    const allTables = document.querySelectorAll('#quotations-table');
+    window.quotationsTableBody = Array.from(allTables).find(el => el.offsetParent !== null);
+    if (!window.quotationsTableBody) {
+        console.warn('quotationsTableBody not found! Data tidak bisa ditampilkan.');
+        return;
+    }
+    console.log('Render ke elemen tabel yang visible:', window.quotationsTableBody);
+    try {
+        if (!Array.isArray(quotations) || quotations.length === 0) {
+            window.quotationsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data penawaran</td></tr>';
+            return;
+        }
+        window.quotationsTableBody.innerHTML = quotations.map(q => {
+            const isAccepted = q.status === 'accepted';
+            return `<tr>
+                <td>${q.id}</td>
+                <td>${q.client_name || ''}</td>
+                <td>${q.quotation_date ? new Date(q.quotation_date).toLocaleDateString() : ''}</td>
+                <td>${q.total_amount ? 'Rp ' + Math.round(q.total_amount).toLocaleString('id-ID') : ''}</td>
+                <td>${isAccepted ? 'Diterima' : (q.status || '')}</td>
+                <td><button>Detail</button></td>
+            </tr>`;
+        }).join('');
+        console.log('Data penawaran berhasil dirender.');
+    } catch (error) {
+        console.error('Error rendering quotations:', error);
     }
 }
 
-inputCost.addEventListener('input', calculateSellingPrice);
-inputMargin.addEventListener('input', calculateSellingPrice);
-
-formProduct.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const payload = {
-        category_id: formProduct.category_id.value,
-        name: formProduct.product_name.value,
-        unit: formProduct.product_unit.value,
-        cost_price: formProduct.product_cost_price.value,
-        profit_margin: formProduct.product_profit_margin.value,
-        unit_price: formProduct.product_price.value
-    };
-    const method = editingProductId ? 'PUT' : 'POST';
-    const url = editingProductId ? `${API_URL}/products/${editingProductId}` : `${API_URL}/products`;
-
+async function loadQuotations() {
     try {
-        const response = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (response.ok) {
-            modalProduct.hide();
-            loadProducts();
-            alert(editingProductId ? 'Produk diperbarui' : 'Produk ditambahkan');
-            editingProductId = null; // Reset after save
-        }
+        appLog('Memuat data penawaran...');
+        const response = await fetch(`${API_URL}/quotations`);
+        const data = await response.json();
+        appLog('Data penawaran dari API:', data);
+        renderQuotations(data);
     } catch (error) {
-        console.error(error);
+        appLog('Gagal load quotations:', error);
     }
-});
+}
+
+// Fungsi untuk menginisialisasi search-product
+function initializeSearchProduct() {
+    const searchProductInput = document.getElementById('search-product');
+    if (searchProductInput) {
+        searchProductInput.addEventListener('input', (e) => {
+            console.log('Pencarian produk:', e.target.value);
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredProducts = products.filter(p => 
+                p.name.toLowerCase().includes(searchTerm) || 
+                (p.category_name && p.category_name.toLowerCase().includes(searchTerm))
+            );
+            renderProducts(filteredProducts);
+        });
+    } else {
+        console.warn('Elemen search-product tidak ditemukan.');
+    }
+}
+
+// Pastikan tab aktif dan panggil fungsi terkait
+// function navigateToTab(tabName) {
+//     console.log(`Navigating to tab: ${tabName}`);
+//     currentTab = tabName;
+//     // Nonaktifkan semua tab-content
+//     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+//     // Aktifkan tab yang dipilih
+//     const tabElement = document.getElementById(tabName);
+//     if (tabElement) {
+//         tabElement.classList.add('active');
+//         console.log(`Tab ${tabName} diaktifkan.`);
+//     } else {
+//         console.warn(`Tab ${tabName} tidak ditemukan di DOM.`);
+//     }
+//     // Setelah tab aktif, baru load data
+//     setTimeout(() => {
+//         if (tabName === 'dashboard') {
+//             loadDashboardStats();
+//         } else if (tabName === 'quotations') {
+//             loadQuotations();
+//         } else if (tabName === 'invoices') {
+//             loadInvoices();
+//         } else if (tabName === 'master-data') {
+//             loadCategories();
+//             loadProducts();
+//         } else if (tabName === 'margin-report') {
+//             loadMarginReport();
+//         }
+//     }, 0);
+// }
+
+// Margin Report Functions
+async function loadMarginReport() {
+    try {
+        const response = await fetch(`${API_URL}/reports/margins`);
+        marginReportData = await response.json(); // Store data globally for filtering
+        renderMarginReport(marginReportData);
+    } catch (error) {
+        console.error('Error loading margin report:', error);
+    }
+}
+
+function renderMarginReport(data) {
+    const tbody = document.querySelector('#margin-report-table');
+    if (!tbody) return;
+    
+    tbody.innerHTML = data.map(item => `
+        <tr>
+            <td>#${item.id}</td>
+            <td>${item.client_name}</td>
+            <td>${new Date(item.quotation_date).toLocaleDateString()}</td>
+            <td>Rp ${Math.round(parseFloat(item.total_amount)).toLocaleString('id-ID')}</td>
+            <td>Rp ${Math.round(parseFloat(item.total_cost)).toLocaleString('id-ID')}</td>
+            <td class="${item.margin >= 0 ? 'text-success' : 'text-danger'}">
+                Rp ${Math.round(parseFloat(item.margin)).toLocaleString('id-ID')}
+            </td>
+            <td class="${item.margin_percent >= 0 ? 'text-success' : 'text-danger'}">
+                ${item.margin_percent}%
+            </td>
+        </tr>
+    `).join('');
+}
 
 // Modal event listeners
 btnNewProduct.addEventListener('click', () => {
@@ -570,89 +616,7 @@ function appLog(...args) {
     console.log('[APPLOG]', ...args);
 }
 
-async function loadQuotations() {
-    try {
-        appLog('Memuat data penawaran...');
-        const response = await fetch(`${API_URL}/quotations`);
-        const data = await response.json();
-        appLog('Data penawaran dari API:', data);
-        renderQuotations(data);
-    } catch (error) {
-        appLog('Gagal load quotations:', error);
-    }
-}
 
-function renderQuotations(quotations) {
-    appLog('Render quotations:', quotations);
-    if (!window.quotationsTableBody) {
-        window.quotationsTableBody = document.querySelector('#quotations-table');
-    }
-    if (!window.quotationsTableBody) {
-        console.warn('quotationsTableBody not found! Data tidak bisa ditampilkan.');
-        return;
-    }
-    try {
-        if (!Array.isArray(quotations) || quotations.length === 0) {
-            window.quotationsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data penawaran</td></tr>';
-            return;
-        }
-        window.quotationsTableBody.innerHTML = quotations.map(q => {
-            const isAccepted = q.status === 'accepted';
-            const isRejected = q.status === 'rejected';
-            const isFinal = isAccepted || isRejected;
-            return `
-            <tr>
-                <td>#${q.id}</td>
-                <td>${q.client_name}</td>
-                <td>${new Date(q.quotation_date).toLocaleDateString()}</td>
-                <td>Rp ${Math.round(parseFloat(q.total_amount)).toLocaleString('id-ID')}</td>
-                <td><span class="status-badge status-${q.status}">${q.status}</span></td>
-                <td>
-                    <div class="d-flex gap-2">
-                        <!-- Status Action Buttons -->
-                        <div class="btn-group" role="group">
-                            ${!isFinal ? `
-                            <button onclick="acceptQuotation(${q.id})" class="btn btn-sm btn-success text-white" title="Setujui & Buat Invoice">
-                                <i class="fas fa-check"></i> Accept
-                            </button>
-                            <button onclick="rejectQuotation(${q.id})" class="btn btn-sm btn-danger text-white" title="Tolak Penawaran">
-                                <i class="fas fa-times"></i> Reject
-                            </button>
-                            ` : `
-                            <button onclick="resetQuotationStatus(${q.id})" class="btn btn-sm btn-warning text-white" title="Reset ke Draft">
-                                <i class="fas fa-undo"></i> Reset
-                            </button>
-                            `}
-                        </div>
-                        <!-- Regular Action Buttons -->
-                        <div class="btn-group" role="group">
-                            <button onclick="viewQuotation(${q.id})" class="btn btn-sm btn-info text-white" title="Preview">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            ${!isFinal ? `
-                            <button onclick="editQuotation(${q.id})" class="btn btn-sm btn-warning text-white" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            ` : ''}
-                            <button onclick="printQuotation(${q.id})" class="btn btn-sm btn-secondary text-white" title="Print">
-                                <i class="fas fa-print"></i>
-                            </button>
-                            ${!isAccepted ? `
-                            <button onclick="deleteQuotation(${q.id})" class="btn btn-sm btn-outline-danger" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            `;
-        }).join('');
-    } catch (err) {
-        window.quotationsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Gagal menampilkan data penawaran</td></tr>';
-        console.error('Gagal render quotations:', err);
-    }
-}
 
 // View/Preview Quotation
 window.viewQuotation = async (id) => {
@@ -918,6 +882,7 @@ window.printQuotationContent = (id) => {
                 .status-sent { background-color: #17a2b8; color: #fff; }
                 .status-accepted { background-color: #28a745; color: #fff; }
                 .status-rejected { background-color: #dc3545; color: #fff; }
+                .status-invoiced { background-color: #343a40; color: #fff; }
             </style>
         </head>
         <body>
@@ -1114,11 +1079,23 @@ async function loadInvoices() {
 }
 
 function renderInvoices(invoices) {
-    invoicesTableBody.innerHTML = invoices.map(inv => `
+    console.log('Rendering invoices:', invoices);
+    const tableBody = document.querySelector('#invoices-table');
+    if (!tableBody) {
+        console.warn('invoices-table not found');
+        return;
+    }
+    
+    if (!Array.isArray(invoices) || invoices.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data invoice</td></tr>';
+        return;
+    }
+
+    tableBody.innerHTML = invoices.map(inv => `
         <tr>
             <td>${inv.invoice_number}</td>
             <td>${inv.client_name}</td>
-            <td>${new Date(inv.invoice_date).toLocaleDateString()}</td>
+            <td>${new Date(inv.invoice_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
             <td>Rp ${Math.round(parseFloat(inv.total_amount)).toLocaleString('id-ID')}</td>
             <td><span class="status-badge status-${inv.status}">${inv.status}</span></td>
             <td>
@@ -1395,24 +1372,28 @@ loadCategories(); // Preload categories for select options
 loadProducts(); // Preload products for datalist
 
 // Search Functionality
-let marginReportData = [];
+const searchProductInput = document.getElementById('search-product');
+if (searchProductInput) {
+    searchProductInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredProducts = products.filter(p => 
+            p.name.toLowerCase().includes(searchTerm) || 
+            (p.category_name && p.category_name.toLowerCase().includes(searchTerm))
+        );
+        renderProducts(filteredProducts);
+    });
+}
 
-document.getElementById('search-product').addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    const filteredProducts = products.filter(p => 
-        p.name.toLowerCase().includes(searchTerm) || 
-        (p.category_name && p.category_name.toLowerCase().includes(searchTerm))
-    );
-    renderProducts(filteredProducts);
-});
-
-document.getElementById('search-margin').addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    const filteredData = marginReportData.filter(item => 
-        item.client_name.toLowerCase().includes(searchTerm)
-    );
-    renderMarginReport(filteredData);
-});
+const searchMarginInput = document.getElementById('search-margin');
+if (searchMarginInput) {
+    searchMarginInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredData = marginReportData.filter(item => 
+            item.client_name.toLowerCase().includes(searchTerm)
+        );
+        renderMarginReport(filteredData);
+    });
+}
 
 // Margin Report Functions
 async function loadMarginReport() {
@@ -1426,14 +1407,23 @@ async function loadMarginReport() {
 }
 
 function renderMarginReport(data) {
+    console.log('Rendering margin report:', data);
     const tbody = document.querySelector('#margin-report-table');
-    if (!tbody) return;
+    if (!tbody) {
+        console.warn('margin-report-table not found');
+        return;
+    }
+    
+    if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada data laporan margin</td></tr>';
+        return;
+    }
     
     tbody.innerHTML = data.map(item => `
         <tr>
             <td>#${item.id}</td>
             <td>${item.client_name}</td>
-            <td>${new Date(item.quotation_date).toLocaleDateString()}</td>
+            <td>${new Date(item.quotation_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
             <td>Rp ${Math.round(parseFloat(item.total_amount)).toLocaleString('id-ID')}</td>
             <td>Rp ${Math.round(parseFloat(item.total_cost)).toLocaleString('id-ID')}</td>
             <td class="${item.margin >= 0 ? 'text-success' : 'text-danger'}">
