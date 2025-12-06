@@ -42,7 +42,7 @@ const itemsContainer = document.getElementById('items-container');
 
 // State
 let currentTab = 'dashboard';
-let products = []; 
+let products = [];
 let categories = [];
 let editingCategoryId = null;
 let editingProductId = null;
@@ -74,11 +74,11 @@ formCategory.addEventListener('submit', async (e) => {
 
 formQuotation.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const items = [];
     // Support both table rows (edit mode) and div rows (create mode)
     const itemRows = document.querySelectorAll('#items-tbody tr, .item-row');
-    
+
     itemRows.forEach(row => {
         const description = row.querySelector('[name="item_description"]');
         const quantity = row.querySelector('[name="item_quantity"]');
@@ -88,12 +88,12 @@ formQuotation.addEventListener('submit', async (e) => {
         const profitMargin = row.querySelector('[name="item_profit_margin"]');
         const discount = row.querySelector('[name="item_discount"]');
         const total = row.querySelector('[name="item_total"]');
-        
+
         // Only add if has values
         if (description && description.value) {
             // Remove thousand separator and convert to number
             const totalValue = total.value.replace(/\./g, '');
-            
+
             items.push({
                 description: description.value,
                 quantity: quantity.value,
@@ -106,7 +106,7 @@ formQuotation.addEventListener('submit', async (e) => {
             });
         }
     });
-    
+
     if (items.length === 0) {
         alert('Minimal harus ada 1 item dalam penawaran');
         return;
@@ -118,7 +118,7 @@ formQuotation.addEventListener('submit', async (e) => {
         quotation_date: formQuotation.quotation_date.value,
         items: items
     };
-    
+
     console.log('Saving quotation with payload:', payload);
 
     try {
@@ -186,10 +186,10 @@ function addItemRow() {
             </div>
         `;
     }
-    
+
     const tbody = document.getElementById('items-tbody');
     const row = document.createElement('tr');
-    
+
     row.innerHTML = `
         <td>
             <input type="text" class="form-control form-control-sm" name="item_description" placeholder="Deskripsi item atau pilih produk" list="product-list" onchange="fillProductPrice(this)" required>
@@ -217,7 +217,7 @@ function addItemRow() {
         <input type="hidden" name="item_cost_price" value="0">
         <input type="hidden" name="item_profit_margin" value="0">
     `;
-    
+
     tbody.appendChild(row);
 }
 
@@ -245,7 +245,7 @@ window.calculateTotal = (input) => {
     const qty = parseFloat(row.querySelector('[name="item_quantity"]').value) || 0;
     const price = parseFloat(row.querySelector('[name="item_price"]').value) || 0;
     const discount = parseFloat(row.querySelector('[name="item_discount"]').value) || 0;
-    
+
     const total = (qty * price) - discount;
     row.querySelector('[name="item_total"]').value = Math.round(total).toLocaleString('id-ID');
 
@@ -254,13 +254,13 @@ window.calculateTotal = (input) => {
 
 function updateGrandTotal() {
     let totalAmount = 0;
-    
+
     document.querySelectorAll('#items-tbody tr').forEach(row => {
         const totalText = row.querySelector('[name="item_total"]').value.replace(/\./g, '');
         const total = parseFloat(totalText) || 0;
         totalAmount += total;
     });
-    
+
     document.getElementById('quotation-total').textContent = `Rp ${Math.round(totalAmount).toLocaleString('id-ID')}`;
 }
 
@@ -316,10 +316,10 @@ async function loadDashboardStats() {
         const acceptedCount = quotations.filter(q => q.status === 'accepted').length;
         const unpaidCount = invoices.filter(inv => inv.status === 'unpaid').length;
         const paidCount = invoices.filter(inv => inv.status === 'paid').length;
-        
+
         const totalQuotations = quotations.length || 1; // Avoid division by zero
         const totalInvoices = invoices.length || 1;
-        
+
         const elDraft = document.getElementById('summary-draft');
         if (elDraft) elDraft.textContent = draftCount;
         const elSent = document.getElementById('summary-sent');
@@ -333,15 +333,15 @@ async function loadDashboardStats() {
 
         // Update progress bars
         const elProgDraft = document.getElementById('progress-draft');
-        if (elProgDraft) elProgDraft.style.width = `${(draftCount/totalQuotations)*100}%`;
+        if (elProgDraft) elProgDraft.style.width = `${(draftCount / totalQuotations) * 100}%`;
         const elProgSent = document.getElementById('progress-sent');
-        if (elProgSent) elProgSent.style.width = `${(sentCount/totalQuotations)*100}%`;
+        if (elProgSent) elProgSent.style.width = `${(sentCount / totalQuotations) * 100}%`;
         const elProgAcc = document.getElementById('progress-accepted');
-        if (elProgAcc) elProgAcc.style.width = `${(acceptedCount/totalQuotations)*100}%`;
+        if (elProgAcc) elProgAcc.style.width = `${(acceptedCount / totalQuotations) * 100}%`;
         const elProgUnpaid = document.getElementById('progress-unpaid');
-        if (elProgUnpaid) elProgUnpaid.style.width = `${(unpaidCount/totalInvoices)*100}%`;
+        if (elProgUnpaid) elProgUnpaid.style.width = `${(unpaidCount / totalInvoices) * 100}%`;
         const elProgPaid = document.getElementById('progress-paid');
-        if (elProgPaid) elProgPaid.style.width = `${(paidCount/totalInvoices)*100}%`;
+        if (elProgPaid) elProgPaid.style.width = `${(paidCount / totalInvoices) * 100}%`;
 
     } catch (error) {
         console.error('Error loading stats:', error);
@@ -383,7 +383,7 @@ async function loadProducts() {
         const response = await fetch(`${API_URL}/products`);
         products = await response.json();
         renderProducts(products);
-        
+
         // Update datalist
         let datalist = document.getElementById('product-list');
         if (!datalist) {
@@ -404,7 +404,7 @@ async function loadProducts() {
 function setupProductFiltering() {
     const filterInput = document.getElementById('product-filter');
     if (!filterInput) return; // Guard if element doesn't exist
-    
+
     filterInput.addEventListener('input', () => {
         const filterValue = filterInput.value.toLowerCase();
         const rows = document.querySelectorAll('#products-table tr');
@@ -461,13 +461,47 @@ function renderQuotations(quotations) {
         }
         window.quotationsTableBody.innerHTML = quotations.map(q => {
             const isAccepted = q.status === 'accepted';
+
+            // Determine actions based on status
+            let actionButtons = `
+                <button onclick="viewQuotation(${q.id})" class="btn btn-sm btn-info text-white me-1" title="Lihat"><i class="fas fa-eye"></i></button>
+            `;
+
+            if (q.status === 'draft') {
+                actionButtons += `
+                    <button onclick="editQuotation(${q.id})" class="btn btn-sm btn-warning text-white me-1" title="Edit"><i class="fas fa-edit"></i></button>
+                    <button onclick="acceptQuotation(${q.id})" class="btn btn-sm btn-success text-white me-1" title="Setujui (Buat Invoice)"><i class="fas fa-check"></i></button>
+                    <button onclick="deleteQuotation(${q.id})" class="btn btn-sm btn-danger text-white" title="Hapus"><i class="fas fa-trash"></i></button>
+                `;
+            } else if (q.status === 'sent') {
+                actionButtons += `
+                    <button onclick="acceptQuotation(${q.id})" class="btn btn-sm btn-success text-white me-1" title="Setujui (Buat Invoice)"><i class="fas fa-check"></i></button>
+                    <button onclick="rejectQuotation(${q.id})" class="btn btn-sm btn-danger text-white me-1" title="Tolak"><i class="fas fa-times"></i></button>
+                    <button onclick="printQuotationContent(${q.id})" class="btn btn-sm btn-secondary text-white" title="Print"><i class="fas fa-print"></i></button>
+                `;
+            } else if (q.status === 'accepted' || q.status === 'invoiced') {
+                actionButtons += `
+                    <button onclick="printQuotationContent(${q.id})" class="btn btn-sm btn-secondary text-white me-1" title="Print"><i class="fas fa-print"></i></button>
+                    <button onclick="resetQuotationStatus(${q.id})" class="btn btn-sm btn-warning text-white" title="Reset Status (Hapus Invoice)"><i class="fas fa-undo"></i></button>
+                `;
+            } else if (q.status === 'rejected') {
+                actionButtons += `
+                    <button onclick="resetQuotationStatus(${q.id})" class="btn btn-sm btn-warning text-white me-1" title="Reset ke Draft"><i class="fas fa-undo"></i></button>
+                    <button onclick="deleteQuotation(${q.id})" class="btn btn-sm btn-danger text-white" title="Hapus"><i class="fas fa-trash"></i></button>
+                `;
+            }
+
             return `<tr>
-                <td>${q.id}</td>
-                <td>${q.client_name || ''}</td>
-                <td>${q.quotation_date ? new Date(q.quotation_date).toLocaleDateString() : ''}</td>
-                <td>${q.total_amount ? 'Rp ' + Math.round(q.total_amount).toLocaleString('id-ID') : ''}</td>
-                <td>${isAccepted ? 'Diterima' : (q.status || '')}</td>
-                <td><button>Detail</button></td>
+                <td>#${q.id}</td>
+                <td>${q.client_name || '-'}</td>
+                <td>${q.quotation_date ? new Date(q.quotation_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
+                <td>Rp ${Math.round(q.total_amount).toLocaleString('id-ID')}</td>
+                <td><span class="status-badge status-${q.status}">${q.status.toUpperCase()}</span></td>
+                <td>
+                    <div class="d-flex">
+                        ${actionButtons}
+                    </div>
+                </td>
             </tr>`;
         }).join('');
         console.log('Data penawaran berhasil dirender.');
@@ -495,8 +529,8 @@ function initializeSearchProduct() {
         searchProductInput.addEventListener('input', (e) => {
             console.log('Pencarian produk:', e.target.value);
             const searchTerm = e.target.value.toLowerCase();
-            const filteredProducts = products.filter(p => 
-                p.name.toLowerCase().includes(searchTerm) || 
+            const filteredProducts = products.filter(p =>
+                p.name.toLowerCase().includes(searchTerm) ||
                 (p.category_name && p.category_name.toLowerCase().includes(searchTerm))
             );
             renderProducts(filteredProducts);
@@ -551,7 +585,7 @@ async function loadMarginReport() {
 function renderMarginReport(data) {
     const tbody = document.querySelector('#margin-report-table');
     if (!tbody) return;
-    
+
     tbody.innerHTML = data.map(item => `
         <tr>
             <td>#${item.id}</td>
@@ -623,7 +657,7 @@ window.viewQuotation = async (id) => {
     try {
         const response = await fetch(`${API_URL}/quotations/${id}/details`);
         const quotation = await response.json();
-        
+
         // Create preview modal content with professional invoice style
         const itemsHtml = quotation.items.map(item => `
             <tr>
@@ -635,7 +669,7 @@ window.viewQuotation = async (id) => {
                 <td style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Rp ${Math.round(parseFloat(item.total_price)).toLocaleString('id-ID')}</td>
             </tr>
         `).join('');
-        
+
         const previewContent = `
             <div class="invoice-container" style="background: white; padding: 2rem; font-family: Arial, sans-serif;">
                 <!-- Header -->
@@ -718,7 +752,7 @@ window.viewQuotation = async (id) => {
                 </div>
             </div>
         `;
-        
+
         // Show in a modal
         const previewDiv = document.createElement('div');
         previewDiv.innerHTML = `
@@ -755,22 +789,22 @@ window.editQuotation = async (id) => {
         console.log('Fetching quotation details for ID:', id);
         const response = await fetch(`${API_URL}/quotations/${id}/details`);
         const quotation = await response.json();
-        
+
         console.log('Quotation data received:', quotation);
-        
+
         // Set editing mode
         editingQuotationId = id;
-        
+
         // Populate form fields
         formQuotation.client_name.value = quotation.client_name || '';
         formQuotation.client_address.value = quotation.client_address || '';
         formQuotation.quotation_date.value = quotation.quotation_date ? quotation.quotation_date.split('T')[0] : ''; // Format to YYYY-MM-DD
-        
+
         console.log('Form fields populated');
-        
+
         // Clear items container
         itemsContainer.innerHTML = '';
-        
+
         // Create table structure
         itemsContainer.innerHTML = `
             <div class="table-responsive">
@@ -791,16 +825,16 @@ window.editQuotation = async (id) => {
                 </table>
             </div>
         `;
-        
+
         const tbody = document.getElementById('items-tbody');
-        
+
         console.log('Items count:', quotation.items ? quotation.items.length : 0);
-        
+
         if (quotation.items && quotation.items.length > 0) {
             quotation.items.forEach((item, index) => {
                 console.log(`Adding item ${index + 1}:`, item);
                 const row = document.createElement('tr');
-                
+
                 row.innerHTML = `
                     <td>
                         <input type="text" class="form-control form-control-sm" name="item_description" placeholder="Deskripsi item atau pilih produk" list="product-list" value="${item.description || ''}" onchange="fillProductPrice(this)" required>
@@ -828,27 +862,27 @@ window.editQuotation = async (id) => {
                     <input type="hidden" name="item_cost_price" value="${item.cost_price || 0}">
                     <input type="hidden" name="item_profit_margin" value="${item.profit_margin || 0}">
                 `;
-                
+
                 tbody.appendChild(row);
             });
         } else {
             console.log('No items found, adding empty row');
             addItemRow(); // Add one empty row if no items
         }
-        
+
         // Update grand total
         updateGrandTotal();
-        
+
         console.log('Grand total updated');
-        
+
         // Update modal title
         document.querySelector('#modal-quotation .modal-title').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Penawaran #' + id;
-        
+
         // Show modal
         modalQuotation.show();
-        
+
         console.log('Modal shown');
-        
+
     } catch (error) {
         console.error('Error loading quotation:', error);
         alert('Gagal memuat data penawaran untuk diedit');
@@ -910,12 +944,12 @@ window.printQuotation = (id) => {
 // Delete Quotation
 window.deleteQuotation = async (id) => {
     if (!confirm('Yakin ingin menghapus penawaran ini?')) return;
-    
+
     try {
         const response = await fetch(`${API_URL}/quotations/${id}`, {
             method: 'DELETE'
         });
-        
+
         if (response.ok) {
             alert('Penawaran berhasil dihapus');
             loadQuotations();
@@ -932,40 +966,40 @@ window.deleteQuotation = async (id) => {
 // Accept Quotation dan Auto Create Invoice
 window.acceptQuotation = async (id) => {
     if (!confirm('Setujui penawaran ini dan buat invoice?')) return;
-    
+
     try {
         console.log('Starting accept quotation process for ID:', id);
-        
+
         // 1. Approve quotation
         const approveResponse = await fetch(`${API_URL}/quotations/${id}/approve`, {
             method: 'PUT'
         });
-        
+
         console.log('Approve response status:', approveResponse.status);
-        
+
         if (!approveResponse.ok) {
             alert('Gagal menyetujui penawaran');
             return;
         }
-        
+
         // 2. Get quotation details
         const quotationResponse = await fetch(`${API_URL}/quotations/${id}/details`);
         const quotation = await quotationResponse.json();
-        
+
         console.log('Quotation details:', quotation);
-        
+
         // 3. Create invoice from quotation
         const invoiceData = {
             quotation_id: id,
             client_name: quotation.client_name,
             invoice_date: new Date().toISOString().split('T')[0],
-            due_date: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0], // 30 days from now
+            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
             total_amount: quotation.total_amount,
             status: 'unpaid'
         };
-        
+
         console.log('Creating invoice with data:', invoiceData);
-        
+
         const invoiceResponse = await fetch(`${API_URL}/invoices`, {
             method: 'POST',
             headers: {
@@ -973,9 +1007,9 @@ window.acceptQuotation = async (id) => {
             },
             body: JSON.stringify(invoiceData)
         });
-        
+
         console.log('Invoice response status:', invoiceResponse.status);
-        
+
         if (invoiceResponse.ok) {
             const invoiceResult = await invoiceResponse.json();
             console.log('Invoice created successfully:', invoiceResult);
@@ -1003,7 +1037,7 @@ window.acceptQuotation = async (id) => {
 // Reject Quotation
 window.rejectQuotation = async (id) => {
     if (!confirm('Tolak penawaran ini?')) return;
-    
+
     try {
         const response = await fetch(`${API_URL}/quotations/${id}/status`, {
             method: 'PATCH',
@@ -1012,7 +1046,7 @@ window.rejectQuotation = async (id) => {
             },
             body: JSON.stringify({ status: 'rejected' })
         });
-        
+
         if (response.ok) {
             alert('Penawaran ditolak.');
             loadQuotations();
@@ -1031,18 +1065,18 @@ window.rejectQuotation = async (id) => {
 // Reset Quotation Status to Draft
 window.resetQuotationStatus = async (id) => {
     if (!confirm('Reset penawaran ini ke status Draft? Invoice terkait akan dihapus.')) return;
-    
+
     try {
         // Delete invoice associated with this quotation
         const deleteInvoiceResponse = await fetch(`${API_URL}/invoices/by-quotation/${id}`, {
             method: 'DELETE'
         });
-        
+
         if (!deleteInvoiceResponse.ok) {
             console.error('Error deleting invoice');
             // Continue anyway, invoice might not exist
         }
-        
+
         // Reset quotation status to draft
         const response = await fetch(`${API_URL}/quotations/${id}/status`, {
             method: 'PATCH',
@@ -1051,7 +1085,7 @@ window.resetQuotationStatus = async (id) => {
             },
             body: JSON.stringify({ status: 'draft' })
         });
-        
+
         if (response.ok) {
             alert('Status penawaran berhasil direset ke Draft dan invoice telah dihapus.');
             loadQuotations();
@@ -1085,7 +1119,7 @@ function renderInvoices(invoices) {
         console.warn('invoices-table not found');
         return;
     }
-    
+
     if (!Array.isArray(invoices) || invoices.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data invoice</td></tr>';
         return;
@@ -1120,16 +1154,16 @@ window.printInvoice = async (id) => {
         const response = await fetch(`${API_URL}/invoices`);
         const invoices = await response.json();
         const invoice = invoices.find(inv => inv.id === id);
-        
+
         if (!invoice) {
             alert('Invoice tidak ditemukan');
             return;
         }
-        
+
         // Get quotation details for items
         const quotationResponse = await fetch(`${API_URL}/quotations/${invoice.quotation_id}/details`);
         const quotation = await quotationResponse.json();
-        
+
         const itemsHtml = quotation.items.map(item => `
             <tr>
                 <td style="padding: 12px; border: 1px solid #dee2e6;">${item.description}</td>
@@ -1140,7 +1174,7 @@ window.printInvoice = async (id) => {
                 <td style="padding: 12px; border: 1px solid #dee2e6; text-align: right;">Rp ${Math.round(parseFloat(item.total_price)).toLocaleString('id-ID')}</td>
             </tr>
         `).join('');
-        
+
         const printContent = `
             <div style="max-width: 900px; margin: 0 auto; font-family: Arial, sans-serif;">
                 <!-- Header -->
@@ -1230,7 +1264,7 @@ window.printInvoice = async (id) => {
                 </div>
             </div>
         `;
-        
+
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
             <!DOCTYPE html>
@@ -1269,7 +1303,7 @@ window.printInvoice = async (id) => {
 // Mark Invoice as Paid
 window.markInvoicePaid = async (id) => {
     if (!confirm('Tandai invoice ini sebagai LUNAS?')) return;
-    
+
     try {
         const response = await fetch(`${API_URL}/invoices/${id}`, {
             method: 'PATCH',
@@ -1278,7 +1312,7 @@ window.markInvoicePaid = async (id) => {
             },
             body: JSON.stringify({ status: 'paid' })
         });
-        
+
         if (response.ok) {
             alert('Invoice berhasil ditandai sebagai LUNAS!');
             loadInvoices();
@@ -1295,7 +1329,7 @@ window.markInvoicePaid = async (id) => {
 // Global functions for inline event handlers
 window.approveQuotation = async (id) => {
     if (!confirm('Apakah Anda yakin ingin menyetujui penawaran ini?')) return;
-    
+
     try {
         const response = await fetch(`${API_URL}/quotations/${id}/approve`, { method: 'PUT' });
         if (response.ok) {
@@ -1376,8 +1410,8 @@ const searchProductInput = document.getElementById('search-product');
 if (searchProductInput) {
     searchProductInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-        const filteredProducts = products.filter(p => 
-            p.name.toLowerCase().includes(searchTerm) || 
+        const filteredProducts = products.filter(p =>
+            p.name.toLowerCase().includes(searchTerm) ||
             (p.category_name && p.category_name.toLowerCase().includes(searchTerm))
         );
         renderProducts(filteredProducts);
@@ -1388,7 +1422,7 @@ const searchMarginInput = document.getElementById('search-margin');
 if (searchMarginInput) {
     searchMarginInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-        const filteredData = marginReportData.filter(item => 
+        const filteredData = marginReportData.filter(item =>
             item.client_name.toLowerCase().includes(searchTerm)
         );
         renderMarginReport(filteredData);
@@ -1413,12 +1447,12 @@ function renderMarginReport(data) {
         console.warn('margin-report-table not found');
         return;
     }
-    
+
     if (!Array.isArray(data) || data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada data laporan margin</td></tr>';
         return;
     }
-    
+
     tbody.innerHTML = data.map(item => `
         <tr>
             <td>#${item.id}</td>
